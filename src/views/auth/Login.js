@@ -32,7 +32,6 @@ const lengthRegEx = /(?=.{8,})/;
 
 // validation
 let loginSchema = Yup.object().shape({
-
   email: Yup.string().email("Invalid email").required("Email is require"),
   password: Yup.string()
     .matches(
@@ -49,15 +48,16 @@ let loginSchema = Yup.object().shape({
 });
 
 const Login = () => {
+  // const [userData , setUserData] = useState([]);
 
-  const [userData , setUserData] = useState([]);
+  const [loginUserData, setLoginUserData] = useState([{}]);
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-      const userDetails =  localStorage.getItem('userData');
-      setUserData(JSON.parse(userDetails));
-  },[])
+  // useEffect(() => {
+  //     const userDetails =  localStorage.getItem('userData');
+  //     setUserData(JSON.parse(userDetails));
+  // },[])
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -68,21 +68,42 @@ const Login = () => {
   };
 
   const onSubmit = (values) => {
-    
-    const userEmail  =  values.email;
+    // get Data from the localstorage
+    const getData = JSON.parse(localStorage.getItem("userData"));
+
+    const getLoginUserData = JSON.parse(localStorage.getItem("LoginUserData"));
+
+    // if array is empty
+    const finaldata = getLoginUserData !== null ? getLoginUserData : [];
+
+    const userEmail = values.email;
     const userPassword = values.password;
 
-    userData.map((user) => {
+    getData.map((user) => {
+      if (
+        user.email === userEmail &&
+        bcrypt.compareSync(userPassword, user.password)
+      ) {
+        const userObj = {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          mobile: user.mobile,
+          password: user.password,
+        };
 
-        if(user.email === userEmail && bcrypt.compareSync(userPassword, user.password)){
-             navigate('/Dashboard');
-        }else{
-           console.log('This is Unvalid User');
-        }
-    })
-    
+        // set new user object
+        setLoginUserData([...loginUserData, userObj]);
 
-  };  
+        // add new user object to localstorage
+        const userDataArray = [...finaldata, userObj];
+        localStorage.setItem("LoginUserData", JSON.stringify(userDataArray));
+        navigate("/Dashboard", { state : userObj});
+      } else {
+        console.log("This is Unvalid User");
+      }
+    });
+  };
 
   return (
     <div className="main-sign-up">
@@ -105,7 +126,6 @@ const Login = () => {
               validateField,
               handleBlur,
             }) => {
-
               // Avoid a race condition to allow each field to be validated on change
               const handleInputChange = async (e, fieldName) => {
                 await handleChange(e);
@@ -120,8 +140,8 @@ const Login = () => {
                       className="justify-content-center"
                       spacing={1}
                     >
-                      <Grid container  spacing={1} >
-                        <Grid item xs={12} sm={12} lg={12} >
+                      <Grid container spacing={1}>
+                        <Grid item xs={12} sm={12} lg={12}>
                           <TextField
                             required
                             fullWidth
@@ -130,12 +150,14 @@ const Login = () => {
                             label="Email"
                             variant="standard"
                             defaultValue={values.email}
-                            onChange={(e) => handleInputChange(e, 'email')}
+                            onChange={(e) => handleInputChange(e, "email")}
                             isValid={touched.email && !errors.email}
                           />
-                        {
-                            errors.email ? <span className="text-danger error-text mb-0" >{errors.email}</span> : null
-                          }
+                          {errors.email ? (
+                            <span className="text-danger error-text mb-0">
+                              {errors.email}
+                            </span>
+                          ) : null}
                         </Grid>
 
                         <Grid item xs={12} sm={12} lg={12}>
@@ -147,7 +169,7 @@ const Login = () => {
                               id="password"
                               name="password"
                               defaultValue={values.password}
-                              onChange={(e) => handleInputChange(e, 'password')}
+                              onChange={(e) => handleInputChange(e, "password")}
                               isValid={touched.password && !errors.password}
                               type={showPassword ? "text" : "password"}
                               endAdornment={
@@ -167,13 +189,17 @@ const Login = () => {
                               }
                             />
                           </FormControl>
-                          {
-                            errors.password ? <span className="text-danger error-text mb-0" >{errors.password}</span> : null
-                          } 
+                          {errors.password ? (
+                            <span className="text-danger error-text mb-0">
+                              {errors.password}
+                            </span>
+                          ) : null}
                         </Grid>
 
                         <Grid item className="my-3">
-                          <Button variant="contained" type="submit">Login</Button>
+                          <Button variant="contained" type="submit">
+                            Login
+                          </Button>
                         </Grid>
                       </Grid>
                     </Grid>

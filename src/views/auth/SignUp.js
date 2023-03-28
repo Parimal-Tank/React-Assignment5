@@ -70,6 +70,7 @@ const SignUp = () => {
     firstName: userData.firstName,
     lastName: userData.lastName,
     email: userData.email,
+    mobile: userData.mobile,
     password: userData.password,
   };
 
@@ -84,14 +85,25 @@ const SignUp = () => {
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(values.password, salt);
 
+    // get Data from the localstorage
+    const getData =  JSON.parse(localStorage.getItem('userData'));
+
+    // if array is empty
+    const finaldata= getData !== null ? getData : []
+
     const user = {
       firstName: values.firstName,
       lastName: values.lastName,
       email: values.email,
+      mobile: values.mobile,
       password: hash,
     };
-    const userDataArray = [];
-    userDataArray.push(user);
+
+    // set new user object
+    setUserData([...userData , user]);
+    
+    // add new user object to localstorage 
+    const userDataArray = [ ...finaldata,  user ];
     localStorage.setItem("userData", JSON.stringify(userDataArray));
   };
 

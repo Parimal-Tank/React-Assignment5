@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import Navbars from "./Navbars";
-import { Grid, Typography } from "@mui/material";
+import { Grid, Rating, Typography } from "@mui/material";
 import Carousel from "react-bootstrap/Carousel";
 
 const ProductsDetails = (args) => {
@@ -57,9 +57,7 @@ const ProductsDetails = (args) => {
             <Typography variant="body2" color="text.secondary">
                 <h5> {productDetail.brand}</h5>
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-               <h5> Rating : {productDetail.rating}</h5>
-            </Typography>
+            <Typography className="d-flex">Rating : <Rating name="read-only" value={productDetail.rating} readOnly /></Typography>
             <Typography variant="body2" color="text.secondary">
                <h5> Price : {productDetail.price}$</h5>
             </Typography>
