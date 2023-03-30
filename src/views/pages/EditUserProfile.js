@@ -22,12 +22,14 @@ let signUpSchema = Yup.object().shape({
     .required("Required"),
 });
 
-const EditUserProfile = (props) => {
-  const { state } = useLocation();
+const EditUserProfile = () => {
+  const  loginUserData  = JSON.parse(localStorage.getItem('LoginUserData'));
+  const state = loginUserData.pop();
 
-  const [openError, setOpenError] = React.useState(false);
+  // For Success Or Alert Message
+  const [openError, setOpenError] = useState(false);
 
-  const [openSuccess, setOpenSuccess] = React.useState(false);
+  const [openSuccess, setOpenSuccess] = useState(false);
 
   const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -45,7 +47,6 @@ const EditUserProfile = (props) => {
     if (reason === 'clickaway') {
       return;
     }
-
     setOpenError(false);
   };
 
@@ -53,7 +54,6 @@ const EditUserProfile = (props) => {
     if (reason === 'clickaway') {
       return;
     }
-
     setOpenSuccess(false);
   };
 
@@ -75,6 +75,7 @@ const EditUserProfile = (props) => {
   const onSubmit = (values) => {
     const getData = JSON.parse(localStorage.getItem("userData"));
 
+    // Check Existing Users email id Index
     let getIndex;
     getData.map((user , index) =>{
         if(user.email === state.email){
@@ -83,18 +84,51 @@ const EditUserProfile = (props) => {
     })
 
     getData.map((user , index) => {
-
+      // Case 1: If the Entered Email id and local storage email and also compare index of this email
       if (user.email === values.email  && index === getIndex ) {
         user["firstName"] = values.firstName;
         user["lastName"] = values.lastName;
         user["email"] = values.email;
         user["mobile"] = values.mobile;
 
-        // add new user object to localstorage
+        // add updated user information object to localStorage
         localStorage.setItem("userData", JSON.stringify(getData));
         handleSuccess()
       }else if(user.email === values.email && index !== getIndex){
          handleError();
+      }else if(user.email !== values.email){
+        // Check If Email is Already Exist with Entered Email
+        let userExistOrNot = false;
+        getData.map((result) => {
+            if(result.email === values.email){
+              userExistOrNot=true
+            }
+        })
+
+        if(userExistOrNot){
+          handleError();
+        }else{
+          user["firstName"] = values.firstName;
+          user["lastName"] = values.lastName;
+          user["email"] = values.email;
+          user["mobile"] = values.mobile;
+  
+           // add updated user information object to localStorage
+           localStorage.setItem("userData", JSON.stringify(getData));
+  
+          const getLoginUserData = JSON.parse(localStorage.getItem("LoginUserData"));
+            
+          // Updated Value Store into a Object
+          getLoginUserData[0]['firstName'] = values.firstName
+          getLoginUserData[0]['lastName'] = values.lastName
+          getLoginUserData[0]['email']=values.email
+          getLoginUserData[0]['mobile']=values.mobile
+          
+          // add new user object to localStorage
+            localStorage.setItem("LoginUserData", JSON.stringify(getLoginUserData));
+           handleSuccess()
+        }
+
       }
          
     });
@@ -102,17 +136,17 @@ const EditUserProfile = (props) => {
 
   return (
     <div>
-      <Snackbar open={openError} autoHideDuration={6000}  style={{position: 'absolute' , top :'-790px' , right:'0px'}} onClose={handleCloseError}>
-        <Alert onClose={handleCloseError} severity="error" sx={{ width: "30%" }}>
-          Email Id is Already in Used
+      <Snackbar open={openError} autoHideDuration={2000} onClose={handleCloseError}  anchorOrigin={ { vertical: 'top', horizontal: 'right' }}>
+        <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }} className='my-5'>
+           Email Id is Already in Used
         </Alert>
       </Snackbar>
 
-      <Snackbar open={openSuccess} autoHideDuration={6000}  style={{position: 'absolute' , top :'-790px' , right:'0px'}} onClose={handleCloseSuccess}>
-        <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: "30%" }}>
-           User Updated Successfully
+      <Snackbar open={openSuccess} autoHideDuration={2000} onClose={handleCloseSuccess}  anchorOrigin={ { vertical: 'top', horizontal: 'right' }}>
+        <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%' }} className='my-5'>
+          User Updated Successfully
         </Alert>
-      </Snackbar>
+      </Snackbar> 
 
       <Navbars />
 
@@ -183,7 +217,6 @@ const EditUserProfile = (props) => {
                               value={values.lastName}
                               onChange={(e) => handleInputChange(e, "lastName")}
                               isValid={touched.lastName && !errors.lastName}
-                              isInvalid={!!errors.lastName}
                             />
                             {errors.lastName ? (
                               <span className="text-danger error-text mb-0">
@@ -246,12 +279,12 @@ const EditUserProfile = (props) => {
               }}
             </Formik>
             <div className="d-flex align-items-center justify-content-center">
-              <h5 className="p-0 mb-0">Want to change your password?</h5>
+              <h6 className="p-0 mb-0">Want to change your password?</h6>
               <Button variant="text" className="mx-3">
                 <Link
                   to="/dashboard/editprofile/changepassword"
                   className="text-decoration-none"
-                  state={state}
+                  id="change-password"
                 >
                   Change Password
                 </Link>

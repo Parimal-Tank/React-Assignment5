@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import Navbars from "../../components/Navbars";
-import { Link, useLocation } from "react-router-dom";
 import MuiAlert from "@mui/material/Alert";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import {
-  TextField,
   Grid,
   CardContent,
   Button,
@@ -17,6 +15,7 @@ import {
   InputAdornment,
   IconButton,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 // For Password Encrypt and decrypt
 const bcrypt = require("bcryptjs-react");
@@ -24,7 +23,7 @@ const bcrypt = require("bcryptjs-react");
 // Data
 const initialValues = {
   validateOnMount: true,
-  currentPassword: '',
+  currentPassword: "",
   password: "",
   confirmPassword: "",
 };
@@ -37,7 +36,7 @@ const lengthRegEx = /(?=.{8,})/;
 
 // validation
 let signUpSchema = Yup.object().shape({
-  currentPassword : Yup.string().required("Required!"),
+  currentPassword: Yup.string().required("Required!"),
   password: Yup.string()
     .matches(
       lowercaseRegEx,
@@ -55,10 +54,12 @@ let signUpSchema = Yup.object().shape({
 });
 
 export const ChangePassword = () => {
+  const navigate = useNavigate();
 
+  const loginUserData = JSON.parse(localStorage.getItem("LoginUserData"));
+  const state = loginUserData.pop();
 
-  const { state } = useLocation();
-
+  // For Success Or Alert Message
   const [openError, setOpenError] = React.useState(false);
 
   const [openSuccess, setOpenSuccess] = React.useState(false);
@@ -73,80 +74,103 @@ export const ChangePassword = () => {
 
   const handleSuccess = () => {
     setOpenSuccess(true);
-  }
+  };
 
   const handleCloseError = (event, reason) => {
-    if (reason === 'clickaway') {
+    if (reason === "clickaway") {
       return;
     }
-
     setOpenError(false);
   };
 
   const handleCloseSuccess = (event, reason) => {
-    if (reason === 'clickaway') {
+    if (reason === "clickaway") {
       return;
     }
-
     setOpenSuccess(false);
   };
-  
 
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleClickShowCurrentPassword = () =>
+    setShowCurrentPassword((show) => !show);
+  const handleClickShowConfirmPassword = () =>
+    setShowConfirmPassword((show) => !show);
 
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
 
+  const handleMouseDownCurrentPassword = (event) => {
+    event.preventDefault();
+  };
+
+  const handleMouseDownConfirmPassword = (event) => {
+    event.preventDefault();
+  };
+
   const onSubmit = (values) => {
-    
-  
     const getData = JSON.parse(localStorage.getItem("userData"));
 
+    const index = getData.find((e) => e.email === state.email);
 
-  const index =  getData.find((e) => e.email === state.email);
-  
+    // Compare Users Existing Password
+    bcrypt
+      .compare(values.currentPassword, index.password)
+      .then((result) => {
+        if (result === false) {
+          handleError();
+        } else {
+          const salt = bcrypt.genSaltSync(10);
+          const hash = bcrypt.hashSync(values.password, salt);
+          index["password"] = hash;
 
-
-  bcrypt.compare(values.currentPassword , index.password ).then((result) => {
-
-    
-
-    if(result === false){
-       handleError()
-    }else{
-
-      const salt = bcrypt.genSaltSync(10);
-      const hash = bcrypt.hashSync(values.password, salt);
-      index['password'] = hash;
-      
-   
-       localStorage.setItem('userData' , JSON.stringify(getData))
-       handleSuccess()
-    }
-  }).catch((error) => {
-    console.log('error: ', error);
-  })
-   
-  
-   
+          localStorage.setItem("userData", JSON.stringify(getData));
+          handleSuccess();
+          navigate("/dashboard/editprofile");
+        }
+      })
+      .catch((error) => {
+        console.log("error: ", error);
+      });
   };
 
   return (
     <div>
       <Navbars />
 
-      <Snackbar open={openError} autoHideDuration={6000}  style={{position: 'absolute' , top :'-790px' , right:'0px'}} onClose={handleCloseError}>
-        <Alert onClose={handleCloseError} severity="error" sx={{ width: "30%" }}>
-           Current Password Not Match
+      <Snackbar
+        open={openError}
+        autoHideDuration={2000}
+        onClose={handleCloseError}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseError}
+          severity="error"
+          sx={{ width: "100%" }}
+          className="my-5"
+        >
+          Current Password Not Match
         </Alert>
       </Snackbar>
 
-      <Snackbar open={openSuccess} autoHideDuration={6000}  style={{position: 'absolute' , top :'-790px' , right:'0px'}} onClose={handleCloseSuccess}>
-        <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: "30%" }}>
-           Password Updated Successfully
+      <Snackbar
+        open={openSuccess}
+        autoHideDuration={2000}
+        onClose={handleCloseSuccess}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSuccess}
+          severity="success"
+          sx={{ width: "100%" }}
+          className="my-5"
+        >
+          Password Updated Successfully
         </Alert>
       </Snackbar>
 
@@ -194,21 +218,26 @@ export const ChangePassword = () => {
                               </InputLabel>
                               <Input
                                 id="currentPassword"
-                                type={showPassword ? "text" : "password"}
+                                type={showCurrentPassword ? "text" : "password"}
                                 name="currentPassword"
                                 defaultValue={values.currentPassword}
                                 onChange={(e) =>
                                   handleInputChange(e, "currentPassword")
                                 }
-                                isValid={touched.currentPassword && !errors.currentPassword}
+                                isValid={
+                                  touched.currentPassword &&
+                                  !errors.currentPassword
+                                }
                                 endAdornment={
                                   <InputAdornment position="end">
                                     <IconButton
                                       aria-label="toggle password visibility"
-                                      onClick={handleClickShowPassword}
-                                      onMouseDown={handleMouseDownPassword}
+                                      onClick={handleClickShowCurrentPassword}
+                                      onMouseDown={
+                                        handleMouseDownCurrentPassword
+                                      }
                                     >
-                                      {showPassword ? (
+                                      {showCurrentPassword ? (
                                         <VisibilityOff />
                                       ) : (
                                         <Visibility />
@@ -270,7 +299,7 @@ export const ChangePassword = () => {
                               </InputLabel>
                               <Input
                                 id="confirmPassword"
-                                type={showPassword ? "text" : "password"}
+                                type={showConfirmPassword ? "text" : "password"}
                                 fullWidth
                                 name="confirmPassword"
                                 defaultValue={values.confirmPassword}
@@ -285,10 +314,12 @@ export const ChangePassword = () => {
                                   <InputAdornment position="end">
                                     <IconButton
                                       aria-label="toggle password visibility"
-                                      onClick={handleClickShowPassword}
-                                      onMouseDown={handleMouseDownPassword}
+                                      onClick={handleClickShowConfirmPassword}
+                                      onMouseDown={
+                                        handleMouseDownConfirmPassword
+                                      }
                                     >
-                                      {showPassword ? (
+                                      {showConfirmPassword ? (
                                         <VisibilityOff />
                                       ) : (
                                         <Visibility />
@@ -311,7 +342,7 @@ export const ChangePassword = () => {
                               variant="contained"
                               type="submit"
                             >
-                              Submit
+                              SUBMIT
                             </Button>
                           </Grid>
                         </Grid>

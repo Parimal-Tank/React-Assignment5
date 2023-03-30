@@ -1,12 +1,12 @@
 import './App.css';
 import './assets/scss/style.scss'
 import 'bootstrap/dist/css/bootstrap.min.css';
-import SignUp from '../src/views/auth/SignUp';
+import Login from './views/auth/Login';
 
 function App() {
   return (
     <div className="App">
-       <SignUp />
+       <Login />
     </div>
   );
 }

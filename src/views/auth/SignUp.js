@@ -9,12 +9,13 @@ import {
   Grid,
   CardContent,
   Button,
+  Snackbar,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-// import { TextField } from "formik-material-ui";
+import MuiAlert from "@mui/material/Alert";
 
 // For Password Encrypt and decrypt
 const bcrypt = require("bcryptjs-react");
@@ -66,6 +67,8 @@ const SignUp = () => {
 
   const [userData, setUserData] = useState([{}]);
 
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const user = {
     firstName: userData.firstName,
     lastName: userData.lastName,
@@ -74,42 +77,124 @@ const SignUp = () => {
     password: userData.password,
   };
 
+  // For Password show and unshown
   const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleClickShowConfirmPassword = () =>
+    setShowConfirmPassword((show) => !show);
 
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
 
+  const handleMouseDownConfirmPassword = (event) => {
+    event.preventDefault();
+  };
+
+  const [openError, setOpenError] = React.useState(false);
+
+  const [openSuccess, setOpenSuccess] = React.useState(false);
+
+  // For Alert Message
+  const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+  });
+
+  const handleError = () => {
+    setOpenError(true);
+  };
+
+  const handleSuccess = () => {
+    setOpenSuccess(true);
+  };
+
+  const handleCloseError = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpenError(false);
+  };
+
+  const handleCloseSuccess = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpenSuccess(false);
+  };
+
   const onSubmit = (values) => {
-
-    const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync(values.password, salt);
-
     // get Data from the localstorage
-    const getData =  JSON.parse(localStorage.getItem('userData'));
+    const getData = JSON.parse(localStorage.getItem("userData"));
 
-    // if array is empty
-    const finaldata= getData !== null ? getData : []
+    const usersData =
+      getData !== null
+        ? getData.filter((user) => {
+            return user.email === values.email;
+          })
+        : [];
 
-    const user = {
-      firstName: values.firstName,
-      lastName: values.lastName,
-      email: values.email,
-      mobile: values.mobile,
-      password: hash,
-    };
+    if (usersData.length > 0) {
+      handleError();
+    } else {
+      console.log("sucess");
+      const salt = bcrypt.genSaltSync(10);
+      const hash = bcrypt.hashSync(values.password, salt);
 
-    // set new user object
-    setUserData([...userData , user]);
-    
-    // add new user object to localstorage 
-    const userDataArray = [ ...finaldata,  user ];
-    localStorage.setItem("userData", JSON.stringify(userDataArray));
+      // if array is empty
+      const finaldata = getData !== null ? getData : [];
+
+      const user = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        mobile: values.mobile,
+        password: hash,
+      };
+
+      // set new user object
+      setUserData([...userData, user]);
+
+      // add new user object to localstorage
+      const userDataArray = [...finaldata, user];
+      localStorage.setItem("userData", JSON.stringify(userDataArray));
+      handleSuccess();
+    }
   };
 
   return (
     <div className="main-sign-up">
-      <div className="row container m-auto flex-column justify-content-center  align-items-center sign-up">
+      <Snackbar
+        open={openError}
+        autoHideDuration={2000}
+        onClose={handleCloseError}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseError}
+          severity="error"
+          sx={{ width: "100%" }}
+        >
+          Already Register using this email!!! Please use another email
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={openSuccess}
+        autoHideDuration={2000}
+        onClose={handleCloseSuccess}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSuccess}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          Successfully Register!!! Please Login
+        </Alert>
+      </Snackbar>
+
+      <div className="row container m-auto flex-column justify-content-center  align-items-center sign-up-style">
         <div className="d-flex flex-column justify-content-center align-items-center bg-white form-style col-lg-8 ">
           <h2>SignUp</h2>
 
@@ -137,7 +222,7 @@ const SignUp = () => {
               };
 
               return (
-                <Form>
+                <Form id="signup-submit">
                   <CardContent>
                     <Grid
                       container
@@ -263,7 +348,7 @@ const SignUp = () => {
                             </InputLabel>
                             <Input
                               id="conformPassword"
-                              type={showPassword ? "text" : "password"}
+                              type={showConfirmPassword ? "text" : "password"}
                               fullWidth
                               name="conformPassword"
                               defaultValue={values.conformPassword}
@@ -278,10 +363,10 @@ const SignUp = () => {
                                 <InputAdornment position="end">
                                   <IconButton
                                     aria-label="toggle password visibility"
-                                    onClick={handleClickShowPassword}
-                                    onMouseDown={handleMouseDownPassword}
+                                    onClick={handleClickShowConfirmPassword}
+                                    onMouseDown={handleMouseDownConfirmPassword}
                                   >
-                                    {showPassword ? (
+                                    {showConfirmPassword ? (
                                       <VisibilityOff />
                                     ) : (
                                       <Visibility />

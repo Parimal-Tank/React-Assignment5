@@ -1,24 +1,26 @@
 import { Button } from "@mui/material";
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
-
+import { Link } from "react-router-dom";
 import { Navbar, NavbarBrand } from "reactstrap";
 
 const Navbars = () => {
 
-  const { state } = useLocation();
+  // For Logout remove data from the Local Storage
+  const handleLogout = () => {
+     localStorage.removeItem('LoginUserData');
+     document.location.reload();
+  }
 
   return (
-    <div className="px-5 py-1" style={{backgroundColor: '#002B5B'}}>
+    <div className="px-5 py-1 navbar-style">
       <Navbar>
-        <NavbarBrand href="/" className="text-white">
+        <NavbarBrand href="/dashboard" className="text-white">
           My Online Shopping Site
         </NavbarBrand>
         <div>
-        <Button   variant="contained" style={{backgroundColor : '#57c5b6' , borderColor: '#57c5b6'}} outline>
-        <Link to='/dashboard/editprofile' state={state}  className="text-decoration-none text-white">Edit Profile</Link>
-        </Button>
-        <Button className="mx-2" variant="outlined" style={{color : '#57c5b6' , borderColor: '#57c5b6'}} outline>
+        <Link to='/dashboard/editprofile'  className="text-decoration-none text-white"><Button  className="nav-button" id='edit-user-profile'  variant="contained" outline>Edit Profile</Button></Link>
+
+        <Button className="mx-2 nav-logout-btn" variant="outlined"   onClick={handleLogout} outline>
             Logout
         </Button>
         </div>

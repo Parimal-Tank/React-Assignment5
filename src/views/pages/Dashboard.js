@@ -5,11 +5,9 @@ import Products from './Products'
 
 const Dashboard = () => {
 
-  const { state } = useLocation();
-
   return (
     <div>
-        <Navbars loginUserData={state} />
+        <Navbars />
         <Products />
     </div>
   )

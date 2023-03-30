@@ -1,12 +1,33 @@
+$bg-color-theme :  #57c5b6;
 
+.navbar-style{
+   background-color: #002B5B;
+}
 
+.nav-button{
+    background-color: $bg-color-theme !important;
+    border-color: $bg-color-theme !important;
+}
+
+.nav-logout-btn{
+   color: $bg-color-theme !important;
+   border-color: $bg-color-theme !important;
+}
 
 .sign-up{
-    height: 100vh;
-   
+    min-height: calc(100vh - 64px);
+}
+
+.sign-up-style{
+    min-height: 100vh;  
+}
+
+.login-style{
+    min-height: 100vh;
 }
 
 .form-style{
+    max-width: 500px !important;
     padding: 60px 0px;
     box-shadow: rgba(255, 255, 255, 0.1) 0px 1px 1px 0px inset, rgba(255, 255, 255, 0.25) 0px 50px 100px -20px, rgba(255, 255, 255, 0.3) 0px 30px 60px -30px;
 }
@@ -15,8 +36,16 @@
     background-image: linear-gradient(to right, #00b4db, #0083b0);
 }
 
+@mixin main-sign-up{
+    background-image: linear-gradient(to right, #00b4db, #0083b0);
+}
+
 .btn-sign-up{
-    background-image: linear-gradient(to right, #00b4db, #0083b0) !important;
+    @include main-sign-up
+}
+
+.main-login{
+    @include main-sign-up
 }
 
 .error-text{

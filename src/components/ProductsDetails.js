@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import Navbars from "./Navbars";
 import { Grid, Rating, Typography } from "@mui/material";
 import Carousel from "react-bootstrap/Carousel";
 
-const ProductsDetails = (args) => {
-  let { state } = useLocation();
+const ProductsDetails = () => {
+  const productDataId  = useParams();
 
-  const productId = state.productId;
-
-  console.log(productId);
+  const productId = JSON.parse(productDataId.id);
 
   const [productDetail, setProductDetails] = useState({});
 
@@ -57,7 +55,7 @@ const ProductsDetails = (args) => {
             <Typography variant="body2" color="text.secondary">
                 <h5> {productDetail.brand}</h5>
             </Typography>
-            <Typography className="d-flex">Rating : <Rating name="read-only" value={productDetail.rating} readOnly /></Typography>
+            <Typography className="d-flex">Rating : <Rating name="read-only" value={parseInt(productDetail.rating)} readOnly /></Typography>
             <Typography variant="body2" color="text.secondary">
                <h5> Price : {productDetail.price}$</h5>
             </Typography>

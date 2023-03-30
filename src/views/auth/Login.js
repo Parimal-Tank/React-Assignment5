@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   FormControl,
   IconButton,
@@ -8,8 +8,10 @@ import {
   TextField,
   Grid,
   CardContent,
+  Snackbar,
   Button,
 } from "@mui/material";
+import MuiAlert from "@mui/material/Alert";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
 import { Formik, Form } from "formik";
@@ -48,23 +50,35 @@ let loginSchema = Yup.object().shape({
 });
 
 const Login = () => {
-  // const [userData , setUserData] = useState([]);
-
   const [loginUserData, setLoginUserData] = useState([{}]);
 
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //     const userDetails =  localStorage.getItem('userData');
-  //     setUserData(JSON.parse(userDetails));
-  // },[])
-
+  // For Show Password Button
   const [showPassword, setShowPassword] = useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
+  };
+
+  // Error Or Success Message
+  const [openError, setOpenError] = React.useState(false);
+
+  const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+  });
+
+  const handleError = () => {
+    setOpenError(true);
+  };
+
+  const handleCloseError = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenError(false);
   };
 
   const onSubmit = (values) => {
@@ -79,6 +93,7 @@ const Login = () => {
     const userEmail = values.email;
     const userPassword = values.password;
 
+    // Check User Credentials
     getData.map((user) => {
       if (
         user.email === userEmail &&
@@ -98,17 +113,32 @@ const Login = () => {
         // add new user object to localstorage
         const userDataArray = [...finaldata, userObj];
         localStorage.setItem("LoginUserData", JSON.stringify(userDataArray));
-        navigate("/Dashboard", { state : userObj});
+        navigate("/dashboard");
       } else {
-        console.log("This is Unvalid User");
+        handleError();
       }
     });
   };
 
   return (
-    <div className="main-sign-up">
-      <div className="row container m-auto flex-column justify-content-center  align-items-center sign-up">
-        <div className="d-flex flex-column justify-content-center align-items-center bg-white form-style col-lg-12">
+    <div className="main-login">
+      <div className="row container m-auto flex-column justify-content-center  align-items-center login-style">
+        <div className="bg-white form-style p-5">
+          <Snackbar
+            open={openError}
+            autoHideDuration={2000}
+            onClose={handleCloseError}
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+          >
+            <Alert
+              onClose={handleCloseError}
+              severity="error"
+              sx={{ width: "100%" }}
+            >
+              Invalid Credentials
+            </Alert>
+          </Snackbar>
+
           <h2>Login</h2>
 
           <Formik
@@ -133,7 +163,7 @@ const Login = () => {
               };
 
               return (
-                <Form>
+                <Form id="login-submit">
                   <CardContent>
                     <Grid
                       container
